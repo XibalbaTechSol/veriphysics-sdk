@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./veriphysics.db # Or Postgres in real prod
+      - SECRET_KEY=production-secret-key-change-me
+    volumes:
+      - ./backend/veriphysics.db:/app/veriphysics.db
+      - ./uploads:/tmp/veriphysics_uploads
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000 # In real prod, use the public domain
+    depends_on:
+      - backend
