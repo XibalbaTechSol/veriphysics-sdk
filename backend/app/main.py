@@ -9,7 +9,9 @@ import uuid
 import logging
 import secrets
 
+from fastapi.staticfiles import StaticFiles
 from .verifier import MotionVerifierWrapper
+from .c2pa_signer import C2PASignerService
 from . import models, database, auth
 
 # Setup Logging
@@ -34,13 +36,30 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Configuration
 CLI_PATH = os.environ.get("VERIPHYSICS_CLI_PATH", "/usr/local/bin/vp_cli")
 UPLOAD_DIR = "/tmp/veriphysics_uploads"
+SIGNED_DIR = "/tmp/veriphysics_signed"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(SIGNED_DIR, exist_ok=True)
+
+app.mount("/files", StaticFiles(directory=SIGNED_DIR), name="files")
 
 try:
     verifier = MotionVerifierWrapper(CLI_PATH)
 except FileNotFoundError as e:
     logger.warning(f"Verifier CLI not found: {e}")
     verifier = None
+
+# C2PA Setup
+CERT_PATH = "backend/certs/ps256.crt"
+KEY_PATH = "backend/certs/ps256.pem"
+signer_service = None
+if os.path.exists(CERT_PATH) and os.path.exists(KEY_PATH):
+    try:
+        signer_service = C2PASignerService(CERT_PATH, KEY_PATH)
+        logger.info("C2PA Signer initialized")
+    except Exception as e:
+        logger.error(f"Failed to init C2PA Signer: {e}")
+else:
+    logger.warning("C2PA Certs not found, signing disabled")
 
 def get_db():
     yield from database.get_db()
@@ -183,16 +202,35 @@ def process_verification(job_id: int, video_path: str, gyro_path: str, db: Sessi
 
         result = verifier.verify(video_path, gyro_path)
         
+        signed_url = None
+        if result.get("verified") and signer_service:
+            try:
+                output_filename = f"signed_{os.path.basename(video_path)}"
+                output_path = os.path.join(SIGNED_DIR, output_filename)
+                
+                # Prepare assertion data
+                verification_data = {
+                    "score": result.get("score"),
+                    "details": result.get("details"),
+                    "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
+                    "verifier": "VeriPhysics Cloud v1"
+                }
+                
+                signer_service.sign_video(video_path, output_path, verification_data)
+                signed_url = f"/files/{output_filename}"
+                logger.info(f"Video signed: {signed_url}")
+            except Exception as e:
+                logger.error(f"Signing failed: {e}")
+
         # Update Job
         # Re-fetch to avoid detach issues if needed, but session is scoped
         job = db.query(models.VerificationJob).filter(models.VerificationJob.id == job_id).first()
         if job:
-            job.status = "COMPLETED" if result.get("verified") else "FAILED" # Or COMPLETED but verified=False?
-            # Let's say COMPLETED means the job finished. Result is in scores.
             job.status = "COMPLETED"
             job.score = result.get("score")
             job.is_consistent = result.get("verified")
             job.message = result.get("message")
+            job.signed_url = signed_url
             db.commit()
             
     except Exception as e:
@@ -274,7 +312,8 @@ def list_jobs(current_user: models.User = Depends(get_current_user), db: Session
             "score": j.score,
             "verified": j.is_consistent,
             "created_at": j.created_at,
-            "filename": j.video_filename
+            "filename": j.video_filename,
+            "signed_url": j.signed_url
         }
         for j in jobs
     ]
@@ -290,5 +329,6 @@ async def get_job_status(job_id: int, db: Session = Depends(get_db)):
         "status": job.status,
         "score": job.score,
         "verified": job.is_consistent,
-        "message": job.message
+        "message": job.message,
+        "signed_url": job.signed_url
     }

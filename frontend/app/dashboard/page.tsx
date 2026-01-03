@@ -17,7 +17,10 @@ interface Job {
     verified: boolean | null;
     created_at: string;
     filename: string;
+    signed_url?: string;
 }
+
+const API_BASE = 'http://localhost:8000';
 
 export default function DashboardPage() {
     const [keys, setKeys] = useState<ApiKey[]>([]);
@@ -132,6 +135,7 @@ export default function DashboardPage() {
                                     <th className="p-4">Status</th>
                                     <th className="p-4">Score</th>
                                     <th className="p-4">Result</th>
+                                    <th className="p-4">C2PA</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700">
@@ -155,6 +159,18 @@ export default function DashboardPage() {
                                                     <span className="flex items-center text-green-400"><CheckCircle size={16} className="mr-1" /> REAL</span> :
                                                     <span className="flex items-center text-red-400"><AlertTriangle size={16} className="mr-1" /> FAKE</span>
                                             ) : '-'}
+                                        </td>
+                                        <td className="p-4">
+                                            {j.signed_url && (
+                                                <a 
+                                                    href={`${API_BASE}${j.signed_url}`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium"
+                                                >
+                                                    <Shield size={14} className="mr-1" /> Manifest
+                                                </a>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

@@ -20,6 +20,7 @@ class VerificationJob(Base):
     score = Column(Float, nullable=True)
     is_consistent = Column(Boolean, nullable=True)
     message = Column(String, nullable=True)
+    signed_url = Column(String, nullable=True) # URL to C2PA signed file
 
 class User(Base):
     __tablename__ = "users"
@@ -44,6 +45,7 @@ class VerificationResponse(BaseModel):
     score: Optional[float] = None
     verified: Optional[bool] = None
     message: Optional[str] = None
+    signed_url: Optional[str] = None
 
 class JobStatus(BaseModel):
     id: int
