@@ -5,14 +5,16 @@ VeriPhysics is a "Physics-based Verification" system that authenticates video co
 ## Core Features
 *   **Active Provenance**: Proves video was captured on a real device at a specific time.
 *   **Physics Verification**: Matches 3D camera rotation with pixel motion to detect deepfakes or simulator attacks.
+*   **Causality Score**: A normalized 0-100 score quantifying the alignment between optical flow and sensor data.
+*   **Handheld Human Verification**: Detects human muscle micro-tremors (8-12Hz) to prevent tripod or bot attacks.
 *   **C2PA Signing Authority**: Acts as a trusted signer, injecting "Physics Verified" assertions into standard C2PA manifests.
 *   **Developer-First**: Simple REST API and Dashboard.
 
 ## Architecture
-*   **CPP Core**: High-performance C++ engine using OpenCV and FastDTW for signal analysis.
-*   **Backend**: Python (FastAPI) service handling auth, job queues, verification logic, and C2PA signing.
-*   **Frontend**: Next.js (React) dashboard for managing API keys and viewing results.
-*   **Android SDK**: (Concept) Kotlin library for capturing secure sensor logs alongside video.
+*   **CPP Core**: High-performance C++ engine (`cpp_core/`) using OpenCV and FastDTW for signal analysis. Implements Causality Score and Handheld Verification.
+*   **Backend**: Python/FastAPI service (`backend/`) handling auth, job queues, verification logic, and C2PA signing.
+*   **Frontend**: Next.js/React dashboard (`frontend/`) for managing API keys and viewing results.
+*   **Android SDK**: Native Android implementation (`android/`) for capturing secure sensor logs alongside video.
 
 ## Getting Started
 
