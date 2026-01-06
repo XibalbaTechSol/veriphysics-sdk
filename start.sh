@@ -10,6 +10,7 @@ echo "🚀 Starting VeriPhysics Ecosystem..."
 echo "Backend: Starting on http://localhost:8000"
 cd backend
 export VERIPHYSICS_CLI_PATH=../cpp_core/build/vp_cli
+export LD_LIBRARY_PATH=../cpp_core/build
 ./venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 

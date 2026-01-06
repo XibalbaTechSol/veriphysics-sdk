@@ -31,7 +31,15 @@ VeriPhysics is a "Physics-based Verification" system that authenticates video co
     ./install_deps.sh
     ```
 
-2.  **Generate Signing Keys (for C2PA)**
+2.  **Build C++ Core**
+    ```bash
+    cd cpp_core
+    mkdir -p build && cd build
+    cmake .. && make
+    cd ../..
+    ```
+
+3.  **Generate Signing Keys (for C2PA)**
     ```bash
     chmod +x backend/certs/generate_certs.sh
     ./backend/certs/generate_certs.sh

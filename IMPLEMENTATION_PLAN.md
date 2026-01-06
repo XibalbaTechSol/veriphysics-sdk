@@ -11,8 +11,8 @@
 - [x] **Frontend: Admin UI**
     - [x] Create `/admin` page with dashboard stats and job table.
     - [x] Update User Dashboard with conditional "Admin Panel" link.
-- [ ] **Verification & Testing**
-    - [ ] Create `start.sh` to run both services.
+- [ ] Verification & Testing
+    - [x] Create `start.sh` to run both services.
     - [ ] Verify admin access and data display.
 
 # Phase 2: C2PA Integration
