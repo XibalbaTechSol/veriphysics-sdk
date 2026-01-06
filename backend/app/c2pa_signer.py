@@ -1,5 +1,5 @@
 import os
-from c2pa import Builder, Signer, C2paSigningAlg
+from c2pa import Builder, Signer, C2paSigningAlg, C2paSignerInfo
 
 class C2PASignerService:
     def __init__(self, cert_path: str, key_path: str):
@@ -17,12 +17,13 @@ class C2PASignerService:
              with open(key_path, "rb") as f:
                  key_data = f.read()
 
-             self.signer = Signer(
+             info = C2paSignerInfo(
+                alg=C2paSigningAlg.ES256,
                 sign_cert=cert_data,
                 private_key=key_data,
-                alg=C2paSigningAlg.ES256, 
-                tsa_url="http://timestamp.digicert.com"
+                ta_url="http://timestamp.digicert.com"
             )
+             self.signer = Signer.from_info(info)
         except Exception as e:
             print(f"Error loading signer: {e}")
             raise e
