@@ -49,8 +49,8 @@ except FileNotFoundError as e:
     verifier = None
 
 # C2PA Setup
-CERT_PATH = "backend/certs/ps256.crt"
-KEY_PATH = "backend/certs/ps256.pem"
+CERT_PATH = "certs/ps256.crt"
+KEY_PATH = "certs/ps256.pem"
 signer_service = None
 if os.path.exists(CERT_PATH) and os.path.exists(KEY_PATH):
     try:

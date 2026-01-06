@@ -35,3 +35,12 @@ Makefile
 *.cmake
 *.so
 *.o
+
+# Certs & Secrets
+backend/certs/*.pem
+backend/certs/*.crt
+backend/certs/*.csr
+backend/certs/*.key
+
+# Database
+*.db
